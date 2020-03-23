@@ -43,6 +43,7 @@ class TornadoDic:
     DDM = "DDM"
     EDDM = "EDDM"
     RDDM = "RDDM"
+    CDDM = "CDDM"
     PH = "PageHinkley"
     CUSUM = "CUSUM"
     NO_DETECTION = "NO_DETECTION"
