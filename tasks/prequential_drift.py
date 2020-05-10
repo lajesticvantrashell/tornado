@@ -83,14 +83,22 @@ class PrequentialDrift:
                 real_class = r[len(r) - 1]
                 predicted_class = self.learner.do_testing(r)
 
-                prediction_status = True
-                if real_class != predicted_class:
-                    prediction_status = False
+                if self.drift_detector.DETECTOR_NAME == "CDDM":
 
+                    proba = self.learner.get_prediction_prob(r)
+                    warning_status, drift_status = self.drift_detector.detect(proba, real_class)
+
+                else:
+
+                    prediction_status = True
+                    if real_class != predicted_class:
+                        prediction_status = False
+
+                    warning_status, drift_status = self.drift_detector.detect(prediction_status)
+                    
                 # -----------------------
                 #  Drift Detected?
                 # -----------------------
-                warning_status, drift_status = self.drift_detector.detect(prediction_status)
                 if drift_status:
                     self.__located_drift_points.append(self.__instance_counter)
                     print("\n ->>> " + self.learner.LEARNER_NAME.title() + " faced a drift at instance " +
@@ -198,4 +206,3 @@ class PrequentialDrift:
                             self.__project_name, self.__project_path, file_name, [0, up_range], 'upper right', 200)
         Archiver.archive_single(pair_name, self.__learner_error_rate_array,
                                 self.__project_path, self.__project_name, 'Error-rate')
-

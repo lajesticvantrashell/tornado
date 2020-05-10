@@ -132,17 +132,29 @@ class PrequentialMultiPairs:
                 #  PREQUENTIAL LEARNING
                 # ----------------------
                 if learner.is_ready():
-                    real_class = r[len(r) - 1]
-                    predicted_class = learner.do_testing(r)
 
-                    prediction_status = True
-                    if real_class != predicted_class:
-                        prediction_status = False
+                    if detector.DETECTOR_NAME == "CDDM":
+
+                        real_class = r[len(r) - 1]
+                        proba = learner.predict_proba(r)
+                        _ = self.learner.do_testing(r) # need this line to update the confusion matrix
+
+                        warning_status, drift_status = detector.detect(proba, real_class, mode='tornado')
+
+                    else:
+
+                        real_class = r[len(r) - 1]
+                        predicted_class = learner.do_testing(r)
+
+                        prediction_status = True
+                        if real_class != predicted_class:
+                            prediction_status = False
+
+                        warning_status, drift_status = detector.detect(prediction_status)
 
                     # -----------------------
                     #  ANY DRIFTS DETECTED?
                     # -----------------------
-                    warning_status, drift_status = detector.detect(prediction_status)
                     if drift_status:
 
                         # APPEND 1 INTO LOCATED DRIFT POINTS
@@ -340,4 +352,3 @@ class PrequentialMultiPairs:
             learner_stats = self.learners_stats[index][len(self.learners_stats[index]) - 1]
             detector_stats = self.detectors_stats[index][len(self.detectors_stats[index]) - 1]
             print(learner_detector, learner_stats, detector_stats)
-

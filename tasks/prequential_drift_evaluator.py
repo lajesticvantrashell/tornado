@@ -19,6 +19,8 @@ from filters.attribute_handlers import *
 from streams.readers.arff_reader import *
 
 
+
+
 class PrequentialDriftEvaluator:
     """This class lets one run a classifier with a drift detector against a data stream,
     and evaluate it prequentially over time. Also, one is able to measure the detection
@@ -90,14 +92,22 @@ class PrequentialDriftEvaluator:
                 real_class = r[len(r) - 1]
                 predicted_class = self.learner.do_testing(r)
 
-                prediction_status = True
-                if real_class != predicted_class:
-                    prediction_status = False
+                if self.drift_detector.DETECTOR_NAME == "CDDM":
+
+                    proba = self.learner.get_prediction_prob(r)
+                    warning_status, drift_status = self.drift_detector.detect(proba, real_class)
+
+                else:
+
+                    prediction_status = True
+                    if real_class != predicted_class:
+                        prediction_status = False
+
+                    warning_status, drift_status = self.drift_detector.detect(prediction_status)
 
                 # -----------------------
                 #  Drift Detected?
                 # -----------------------
-                warning_status, drift_status = self.drift_detector.detect(prediction_status)
                 if drift_status:
                     self.__drift_points_boolean.append(1)
                     self.__located_drift_points.append(self.__instance_counter)
@@ -212,4 +222,3 @@ class PrequentialDriftEvaluator:
                                 self.__project_path, self.__project_name, 'Error-rate')
         Plotter.plot_single_ddm_points(pair_name, self.__drift_points_boolean,
                                        self.__project_name, self.__project_path, file_name)
-
