@@ -72,7 +72,12 @@ class BERNOULLI:
 
 class BERNOULLI_V_DRIFT(BERNOULLI):
 
-    def __init__(self, noise=0.25, PX1=0.5, concept_length=25000, transition_length=500, random_seed=10):
+    '''
+    A Bernoulli stream with virtual drift.
+    This is designed to induce false positives in error-rate based drift detectors.
+    '''
+
+    def __init__(self, noise=0.25, PX1=0.5, concept_length=25000, transition_length=500, random_seed=10, repeats=1):
         c1 = (PX1, noise, 1)
         c2 = (1-PX1, noise, 1)
         concepts = [c1, c2] * repeats
@@ -80,7 +85,12 @@ class BERNOULLI_V_DRIFT(BERNOULLI):
 
 class BERNOULLI_VR_DRIFT(BERNOULLI):
 
-    def __init__(self, noise=0.25, PX1=0.5, concept_length=25000, transition_length=500, random_seed=10):
+    '''
+    A Bernoulli stream with virtual AND real drift.
+    This is designed to induce false negatives in error-rate based drift detectors.
+    '''
+
+    def __init__(self, noise=0.25, PX1=0.5, concept_length=25000, transition_length=500, random_seed=10, repeats=1):
         c1 = (PX1, noise, 1)
         c2 = (1-PX1, 1-noise, 1)
         concepts = [c1, c2] * repeats
