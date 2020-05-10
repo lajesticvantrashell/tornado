@@ -15,9 +15,12 @@ class SuperDetector:
         self.RUNTIME = 0
         self.TOTAL_RUNTIME = 0
 
-    def detect(self, pr):
+    def detect(self, pr, prob=False):
         t1 = time.perf_counter()
-        warning_status, drift_status = self.run(pr)
+        if prob:
+            warning_status, drift_status = self.run(pr, prob)
+        else:
+            warning_status, drift_status = self.run(pr)
         t2 = time.perf_counter()
         delta_t = (t2 - t1) * 1000  # in milliseconds
         self.RUNTIME += delta_t
