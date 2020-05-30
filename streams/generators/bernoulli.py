@@ -81,11 +81,13 @@ class BERNOULLI_HARD(BERNOULLI):
     def get_class_name():
         return BERNOULLI.__name__ + '_HARD'
 
-    def __init__(self, noise=0.2, PX1=0.5, concept_length=1000, transition_length=0, random_seed=10, repeats=1, mode='real'):
+    def __init__(self, noise=0.2, PX1=0.5, concept_length=1000, transition_length=0, random_seed=10, repeats=1):
         c1 = (PX1, noise, 1)
-        if mode=='real':
+        if random.random()<0.5:
+            # real drift
             c2 = (1-PX1, 1-noise, 1)
-        elif mode=='virtual':
+        else:
+            # virtual drift
             c2 = (1-PX1, noise, 1)
         concepts = [c1, c2] * repeats
         num_drifts = 0 if mode=='virtual' else None
@@ -107,11 +109,13 @@ class BERNOULLI_TYPICAL(BERNOULLI):
         PY1X1 = np.random.random() / 2
         PX1 = np.random.random()
         c1 = (PX1, noise, 1)
-        if mode=='real':
+        if random.random()<0.5:
+            # real drift
             PY1X0 = np.random.uniform(PY1X0, 1)
             PY1X1 = np.random.random(PY1X1, 1)
             PX1 = np.random.random()
-        elif mode=='virtual':
+        else:
+            # virtual drift
             PX1 = np.random.random()
         c2 = (PX1, PY1X0, PY1X1)
         concepts = [c1, c2] * repeats
