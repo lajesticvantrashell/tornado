@@ -3,14 +3,14 @@ import numpy as np
 
 class BERNOULLI:
 
-    def __init__(self, concepts, concept_length=25000, transition_length=500, random_seed=10):
+    def __init__(self, concepts, concept_length=25000, transition_length=500, random_seed=10, num_drifts=None):
         '''
         Each concept is specified by a triple of values (P(X=1), P(Y=1|X=0), P(Y=0|X=1))
         '''
         self.__CONCEPTS = concepts
         self.__INSTANCES_NUM = concept_length * len(self.__CONCEPTS)
         self.__CONCEPT_LENGTH = concept_length
-        self.__NUM_DRIFTS = len(self.__CONCEPTS) - 1
+        self.__NUM_DRIFTS = num_drifts if num_drifts else len(self.__CONCEPTS) - 1
         self.__W = transition_length
         self.__RECORDS = []
 
@@ -70,28 +70,50 @@ class BERNOULLI:
         arff_writer.close()
         print("You can find the generated files in " + output_path + "!")
 
-class BERNOULLI_V_DRIFT(BERNOULLI):
+class BERNOULLI_HARD(BERNOULLI):
 
     '''
-    A Bernoulli stream with virtual drift.
-    This is designed to induce false positives in error-rate based drift detectors.
+    A tricksy Bernoulli stream with virtual drift.
+    This is designed to induce false positives or false negativesin error-rate based drift detectors.
     '''
 
-    def __init__(self, noise=0.25, PX1=0.5, concept_length=25000, transition_length=500, random_seed=10, repeats=1):
+    @staticmethod
+    def get_class_name():
+        return BERNOULLI.__name__ + '_HARD'
+
+    def __init__(self, noise=0.2, PX1=0.5, concept_length=1000, transition_length=0, random_seed=10, repeats=1, mode='real'):
         c1 = (PX1, noise, 1)
-        c2 = (1-PX1, noise, 1)
+        if mode=='real':
+            c2 = (1-PX1, 1-noise, 1)
+        elif mode=='virtual':
+            c2 = (1-PX1, noise, 1)
         concepts = [c1, c2] * repeats
-        super().__init__(concepts, concept_length, transition_length, random_seed)
+        num_drifts = 0 if mode=='virtual' else None
+        super().__init__(concepts, concept_length, transition_length, random_seed, num_drifts=num_drifts)
 
-class BERNOULLI_VR_DRIFT(BERNOULLI):
+class BERNOULLI_TYPICAL(BERNOULLI):
 
     '''
-    A Bernoulli stream with virtual AND real drift.
-    This is designed to induce false negatives in error-rate based drift detectors.
+    A tricksy Bernoulli stream with virtual drift.
+    This is designed to be a typical drifting bernoulli stream.
     '''
 
-    def __init__(self, noise=0.25, PX1=0.5, concept_length=25000, transition_length=500, random_seed=10, repeats=1):
+    @staticmethod
+    def get_class_name():
+        return BERNOULLI.__name__ + '_TYPICAL'
+
+    def __init__(self, concept_length=1000, transition_length=0, random_seed=10, repeats=1, mode='real'):
+        PY1X0 = np.random.random() / 2
+        PY1X1 = np.random.random() / 2
+        PX1 = np.random.random()
         c1 = (PX1, noise, 1)
-        c2 = (1-PX1, 1-noise, 1)
+        if mode=='real':
+            PY1X0 = np.random.uniform(PY1X0, 1)
+            PY1X1 = np.random.random(PY1X1, 1)
+            PX1 = np.random.random()
+        elif mode=='virtual':
+            PX1 = np.random.random()
+        c2 = (PX1, PY1X0, PY1X1)
         concepts = [c1, c2] * repeats
-        super().__init__(concepts, concept_length, transition_length, random_seed)
+        num_drifts = 0 if mode=='virtual' else None
+        super().__init__(concepts, concept_length, transition_length, random_seed, num_drifts=num_drifts)

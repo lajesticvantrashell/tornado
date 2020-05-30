@@ -5,4 +5,5 @@ from streams.generators.stagger_stream import STAGGER
 from streams.generators.sea_stream import SEA
 from streams.generators.circles_stream import CIRCLES
 from streams.generators.led_stream import LEDConceptDrift
-from streams.generators.bernoulli import BERNOULLI, BERNOULLI_V_DRIFT, BERNOULLI_VR_DRIFT
+from streams.generators.bernoulli import BERNOULLI, BERNOULLI_HARD, BERNOULLI_TYPICAL
+from streams.generators.mimic import MIMIC

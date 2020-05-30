@@ -97,7 +97,8 @@ class CDDM(SuperDetector):
             return self.buffer_x[:min_i], self.buffer_y[:min_i]
 
     def reset(self):
-        super().reset()
+        self.RUNTIME = 0
+        # Data storage
         self.buffer_x = [ None for i in range(self.window_size) ]
         self.buffer_y = [ None for i in range(self.window_size) ]
 
