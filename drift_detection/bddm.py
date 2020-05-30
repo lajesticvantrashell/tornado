@@ -22,7 +22,7 @@ class BDDM(SuperDetector):
 
     DETECTOR_NAME = TornadoDic.BDDM
 
-    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, drift_rate=0.001, window_length=False):
+    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, drift_rate=0.001, window_length=1000):
 
         self.drift_confidence = drift_confidence
         self.warning_confidence = warning_confidence

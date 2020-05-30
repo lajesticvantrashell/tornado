@@ -45,7 +45,6 @@ class TornadoDic:
     RDDM = "RDDM"
     CDDM = "CDDM"
     CDDM2 = "CDDM2"
-    CDDM3 = "CDDM3"
     BWAF = "BWAF"
     BDDM = "BDDM"
     BDDM_win = "BDDM_win"
