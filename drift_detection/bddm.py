@@ -11,7 +11,7 @@ Published in: None
 URL: None
 """
 
-from scipy.special import beta as beta
+from scipy.special import betaln
 
 from dictionary.tornado_dictionary import TornadoDic
 from drift_detection.detector import SuperDetector
@@ -33,18 +33,18 @@ class BDDM(SuperDetector):
         self.b = [] # all the unsuccessful trials
         self.N = 0 # total number of trials
 
-    def prior(self, t):
+    def log_prior(self, t):
         if t==0:
-            return (1-self.drift_rate)**self.N
+            return np.log(1-self.drift_rate)*self.N
         else:
-            return (1-self.drift_rate)**(t-1) * self.drift_rate
+            return np.log(1-self.drift_rate)*(t-1) + np.log(self.drift_rate)
 
-    def likelihood(self, drift_point):
+    def log_likelihood(self, drift_point):
         a1 = self.a[:drift_point]
         b1 = self.b[:drift_point]
         a2 = self.a[drift_point:]
         b2 = self.b[drift_point:]
-        return beta_func(a1+1, b1+1) * beta_func(a2+1, b2+1)
+        return betaln(a1+1, b1+1) + betaln(a2+1, b2+1)
 
     def run(self, pr):
 
@@ -59,7 +59,7 @@ class BDDM(SuperDetector):
 
         posteriors = []
         for k in range(self.N):
-            posterior.append( self.likelihood(k) * self.prior(k) )
+            posterior.append( np.exp(self.log_likelihood(k) + self.log_prior(k)) )
 
         p_stable = posteriors[0] / sum(posteriors)
 
