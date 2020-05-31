@@ -133,23 +133,17 @@ class PrequentialMultiPairs:
                 # ----------------------
                 if learner.is_ready():
 
+                    real_class = r[len(r) - 1]
+                    predicted_class = learner.do_testing(r)
+
+                    prediction_status = True
+                    if real_class != predicted_class:
+                        prediction_status = False
+
                     if detector.DETECTOR_NAME == "CDDM":
-
-                        real_class = r[len(r) - 1]
-                        proba = learner.predict_proba(r)
-                        _ = self.learner.do_testing(r) # need this line to update the confusion matrix
-
-                        warning_status, drift_status = detector.detect(proba, real_class, mode='tornado')
-
+                        confidence = max( learner.get_prediction_prob_list(r) )
+                        warning_status, drift_status = detector.detect(prediction_status, confidence)
                     else:
-
-                        real_class = r[len(r) - 1]
-                        predicted_class = learner.do_testing(r)
-
-                        prediction_status = True
-                        if real_class != predicted_class:
-                            prediction_status = False
-
                         warning_status, drift_status = detector.detect(prediction_status)
 
                     # -----------------------

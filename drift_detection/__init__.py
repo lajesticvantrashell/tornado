@@ -10,3 +10,5 @@ from drift_detection.rddm import RDDM
 from drift_detection.page_hinkley import PH
 from drift_detection.seq_drift2 import SeqDrift2ChangeDetector
 from drift_detection.cddm import CDDM, CDDM2
+from drift_detection.bddm import BDDM
+from drift_detection.bwaf import BWAF

@@ -243,7 +243,7 @@ class HoeffdingTree(SuperClassifier):
             print("Please train a Hoeffding Tree classifier first.")
             exit()
 
-    def get_prediction_prob(self, X):
+    def get_prediction_prob_list(self, X):
 
         node = self.__trace(X)
 
@@ -269,6 +269,12 @@ class HoeffdingTree(SuperClassifier):
                 prob = [x / prob_sum for x in prob]
             else:
                 prob = [0.0 for x in prob]
+
+        return prob
+
+    def get_prediction_prob(self, X):
+
+        prob = self.get_prediction_prob_list(X)
 
         pred_prob = {}
         for i, c in enumerate(self.CLASSES):

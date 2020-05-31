@@ -116,7 +116,7 @@ class NaiveBayes(SuperClassifier):
             print("Please train a Naive Bayes classifier first.")
             exit()
 
-    def get_prediction_prob(self, X):
+    def get_prediction_prob_list(self, X):
 
         prob = []
         for c in self.CLASSES:
@@ -142,6 +142,12 @@ class NaiveBayes(SuperClassifier):
             prob = [x / prob_sum for x in prob]
         else:
             prob = [0.0 for x in prob]
+
+        return prob
+
+    def get_prediction_prob(self, X):
+
+        prob = self.get_prediction_prob_list(X)
 
         pred_prob = {}
         for i, c in enumerate(self.CLASSES):
