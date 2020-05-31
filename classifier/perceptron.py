@@ -83,6 +83,28 @@ class Perceptron(SuperClassifier):
             print("Please train a Perceptron classifier first!")
             exit()
 
+    def get_prediction_prob_list(self, instance):
+
+        # Just return a one-hot matrix
+
+        if self._IS_READY:
+            x = instance[0:len(instance) - 1]
+            y = instance[len(instance) - 1]
+            x.append(1)
+            predictions = OrderedDict()
+            for c in list(self.CLASSES):
+                predictions[c] = self.predict(x, c)
+            y_predicted = max(predictions.items(), key=operator.itemgetter(1))[0]
+
+            prob = []
+            for i, c in enumerate(self.CLASSES):
+                prob.append(int(c==y_predicted))
+
+            return prob
+        else:
+            print("Please train a Perceptron classifier first!")
+            exit()
+
     def reset(self):
         super()._reset_stats()
         self.WEIGHTS = OrderedDict()
