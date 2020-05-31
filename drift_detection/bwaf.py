@@ -16,6 +16,8 @@ from scipy import integrate
 from scipy.stats import beta
 from scipy.special import beta as beta_func
 
+import time
+
 from dictionary.tornado_dictionary import TornadoDic
 from drift_detection.detector import SuperDetector
 
@@ -26,6 +28,8 @@ class BWAF(SuperDetector):
     DETECTOR_NAME = TornadoDic.BWAF
 
     def __init__(self, drift_confidence=0.001, warning_confidence=0.005):
+
+        super().__init__()
 
         self.drift_confidence = drift_confidence
         self.warning_confidence = warning_confidence
@@ -49,7 +53,10 @@ class BWAF(SuperDetector):
         self.b = 1-pr + self.gamma*self.b
         self.A += pr
         self.B += 1-pr
+        print(time.perf_counter())
+        print(self.a, self.b, self.A, self.B)
         pr_drift = BWAF.pr_drift(self.a, self.b, self.A, self.B)
+        print(time.perf_counter())
         self.gamma = pr_drift
 
         if 1-pr_drift < self.drift_confidence:
@@ -57,6 +64,9 @@ class BWAF(SuperDetector):
             drift_status = True
         elif 1-pr_drift < self.warning_confidence:
             warning_status = True
+            drift_status = False
+        else:
+            warning_status = False
             drift_status = False
 
         return warning_status, drift_status

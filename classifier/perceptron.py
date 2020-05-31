@@ -85,7 +85,7 @@ class Perceptron(SuperClassifier):
 
     def get_prediction_prob_list(self, instance):
 
-        # Just return a one-hot matrix
+        # Just return a one-hot array
 
         if self._IS_READY:
             x = instance[0:len(instance) - 1]

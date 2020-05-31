@@ -12,6 +12,7 @@ URL: None
 """
 
 from scipy.special import betaln
+import numpy as np
 
 from dictionary.tornado_dictionary import TornadoDic
 from drift_detection.detector import SuperDetector
@@ -22,12 +23,14 @@ class BDDM(SuperDetector):
 
     DETECTOR_NAME = TornadoDic.BDDM
 
-    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, drift_rate=0.001, window_length=1000):
+    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, drift_rate=0.001, n=100):
+
+        super().__init__()
 
         self.drift_confidence = drift_confidence
         self.warning_confidence = warning_confidence
         self.drift_rate = drift_rate
-        self.win_len = window_len
+        self.win_len = n
 
         self.a = [] # all the successful trials
         self.b = [] # all the unsuccessful trials
@@ -40,10 +43,10 @@ class BDDM(SuperDetector):
             return np.log(1-self.drift_rate)*(t-1) + np.log(self.drift_rate)
 
     def log_likelihood(self, drift_point):
-        a1 = self.a[:drift_point]
-        b1 = self.b[:drift_point]
-        a2 = self.a[drift_point:]
-        b2 = self.b[drift_point:]
+        a1 = sum(self.a[:drift_point])
+        b1 = sum(self.b[:drift_point])
+        a2 = sum(self.a[drift_point:])
+        b2 = sum(self.b[drift_point:])
         return betaln(a1+1, b1+1) + betaln(a2+1, b2+1)
 
     def run(self, pr):
@@ -53,21 +56,27 @@ class BDDM(SuperDetector):
         self.N += 1
 
         # if we have exceeded the window length, then combine the first two items in the window
-        if self.window_len and len(self.a) > self.window_len:
+        if self.win_len and len(self.a) > self.win_len:
             self.a = [sum(self.a[:2])] + self.a[2:]
             self.b = [sum(self.b[:2])] + self.b[2:]
 
-        posteriors = []
+        log_posteriors = []
         for k in range(self.N):
-            posterior.append( np.exp(self.log_likelihood(k) + self.log_prior(k)) )
+            log_posteriors.append( self.log_likelihood(k) + self.log_prior(k) )
+        log_posteriors -= max(log_posteriors)
+        posteriors = np.exp(log_posteriors)
 
-        p_stable = posteriors[0] / sum(posteriors)
+
+        pr_stable = posteriors[0] / sum(posteriors)
 
         if pr_stable < self.drift_confidence:
             warning_status = False
             drift_status = True
         elif pr_stable < self.warning_confidence:
             warning_status = True
+            drift_status = False
+        else:
+            warning_status = False
             drift_status = False
 
         return warning_status, drift_status

@@ -22,19 +22,21 @@ class CDDM(SuperDetector):
 
     DETECTOR_NAME = TornadoDic.CDDM
 
-    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, window_size=1000):
+    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, n=100):
+
+        super().__init__()
 
         # Parameters
-        self.warning_threshold = warning_confidence / window_size
-        self.drift_threshold = drift_confidence / window_size
-        self.window_size = window_size
+        self.warning_threshold = warning_confidence / n
+        self.drift_threshold = drift_confidence / n
+        self.window_size = n
 
         # Data storage
         self.window = []
         self.n_samples = 0
 
     def get_x0(self, pr, conf):
-        return pr-confidence
+        return pr-conf
 
     def run(self, pr, confidence):
 
@@ -49,11 +51,14 @@ class CDDM(SuperDetector):
 
         pr_drift = min(probs)
 
-        if pr_drift < self.drift_confidence:
+        if pr_drift < self.drift_threshold:
             warning_status = False
             drift_status = True
-        elif pr_drift < self.warning_confidence:
+        elif pr_drift < self.warning_threshold:
             warning_status = True
+            drift_status = False
+        else:
+            warning_status = False
             drift_status = False
 
         return warning_status, drift_status
@@ -74,4 +79,7 @@ class CDDM2(CDDM):
     DETECTOR_NAME = TornadoDic.CDDM2
 
     def get_x0(self, pr, conf):
-        return (pr-confidence)/(confidence*(1-confidence))
+        if conf==0 or conf==1:
+            return (pr-conf)/(1e-5)
+        else:
+            return (pr-conf)/(conf*(1-conf))

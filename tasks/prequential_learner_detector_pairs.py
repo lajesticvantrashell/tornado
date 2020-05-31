@@ -140,7 +140,7 @@ class PrequentialMultiPairs:
                     if real_class != predicted_class:
                         prediction_status = False
 
-                    if detector.DETECTOR_NAME == "CDDM":
+                    if detector.DETECTOR_NAME.startswith("CDDM"):
                         confidence = max( learner.get_prediction_prob_list(r) )
                         warning_status, drift_status = detector.detect(prediction_status, confidence)
                     else:

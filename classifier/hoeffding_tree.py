@@ -246,6 +246,7 @@ class HoeffdingTree(SuperClassifier):
     def get_prediction_prob_list(self, X):
 
         node = self.__trace(X)
+        X = X[0:len(X) - 1]
 
         if node.get_class() is None:
             node = node.PARENT

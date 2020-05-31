@@ -117,7 +117,7 @@ class NaiveBayes(SuperClassifier):
             exit()
 
     def get_prediction_prob_list(self, X):
-
+        X = X[0:len(X) - 1]
         prob = []
         for c in self.CLASSES:
             pr = self.CLASSES_PROB_DISTRIBUTIONS[c]
