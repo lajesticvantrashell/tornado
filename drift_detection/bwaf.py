@@ -13,6 +13,7 @@ URL: None
 
 import numpy as np
 from scipy import integrate
+from scipy.special import betainc
 from scipy.stats import beta
 from scipy.special import beta as beta_func
 
@@ -41,11 +42,8 @@ class BWAF(SuperDetector):
 
     @staticmethod
     def pr_drift(a, b, A, B):
-        bounds_q0 = lambda: [0, 1]
-        bounds_qt = lambda q0: [0, q0]
-        integrand = lambda x, y: beta.pdf(x, A-a+1, B-b+1)*beta.pdf(y, a+1,b+1)
-        return integrate.nquad(integrand, [bounds_qt, bounds_q0])[0]
-
+        integrand = lambda x: beta.pdf(x, A-a+1, B-b+1)*betainc(a+1,b+1, x)
+        return integrate.quad(integrand, 0, 1, limit=20, epsabs=0.001)[0]
 
     def run(self, pr):
 
@@ -53,10 +51,7 @@ class BWAF(SuperDetector):
         self.b = 1-pr + self.gamma*self.b
         self.A += pr
         self.B += 1-pr
-        print(time.perf_counter())
-        print(self.a, self.b, self.A, self.B)
         pr_drift = BWAF.pr_drift(self.a, self.b, self.A, self.B)
-        print(time.perf_counter())
         self.gamma = pr_drift
 
         if 1-pr_drift < self.drift_confidence:
