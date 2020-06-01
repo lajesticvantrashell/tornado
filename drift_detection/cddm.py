@@ -13,6 +13,8 @@ URL: None
 
 import numpy as np
 
+import warnings
+
 from dictionary.tornado_dictionary import TornadoDic
 from drift_detection.detector import SuperDetector
 
@@ -22,7 +24,7 @@ class CDDM(SuperDetector):
 
     DETECTOR_NAME = TornadoDic.CDDM
 
-    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, n=100):
+    def __init__(self, drift_confidence=0.1, warning_confidence=0.2, n=100):
 
         super().__init__()
 
@@ -35,19 +37,25 @@ class CDDM(SuperDetector):
         self.window = []
         self.n_samples = 0
 
+        self.total = 0
+
     def get_x0(self, pr, conf):
         return pr-conf
 
     def run(self, pr, confidence):
+
+        self.n_samples += 1 # don't actually need this
 
         x0 = self.get_x0(pr, confidence)
 
         window = self.window = [x0] + self.window
 
         if len(self.window) > self.window_size:
-            window = self.window = self.window[1:]
+            window = self.window = self.window[:-1]
 
-        probs = np.exp( np.cumsum(window)**2 / 2 / (1+np.arange(len(self.window))) )
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            probs = np.exp( - np.cumsum(window)**2 / 2 / (1+np.arange(len(self.window))) )
 
         pr_drift = min(probs)
 
@@ -60,6 +68,11 @@ class CDDM(SuperDetector):
         else:
             warning_status = False
             drift_status = False
+
+        # self.total += x0
+        # mean = self.total / self.n_samples
+        #
+        # print(pr_drift, warning_status, drift_status, sum(window), mean)
 
         return warning_status, drift_status
 
