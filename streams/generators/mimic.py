@@ -36,7 +36,7 @@ class MIMIC:
         self.__NUM_DRIFTS = n_concepts - 1
         self.__W = transition_length
         self.__RECORDS = []
-        self.__N_PRIORITIES = n_priorities
+        self.__PRIORITY_LABELS = list(range(1, n_priorities+1))
         self.__N_CONCEPTS = n_concepts
 
         self.__RANDOM_SEED = random_seed
@@ -53,7 +53,8 @@ class MIMIC:
 
     def generate_concept(self, n_random_labels=20):
         concept = DecisionTreeClassifier()
-        rand_labels = randint(1, self.__N_PRIORITIES+1, size=n_random_labels)
+        rand_labels = random.choices(self.__PRIORITY_LABELS, k=n_random_labels)
+        # (1, self.__N_PRIORITIES+1, size=n_random_labels)
         concept.fit(self.__FEATURES_DF.iloc[:n_random_labels, :], rand_labels)
         # print(self.__FEATURES_DF.iloc[:n_random_labels, :])
         return concept
@@ -104,22 +105,28 @@ class MIMIC:
         # print(features.to_numpy().reshape(1, 1))
         # print(features.to_numpy().reshape(-1, 1).shape())
         label = concept.predict(features.to_numpy().reshape(1, -1))
-        return list(features) + [label]
+        # print(list(features))
+        # print(label)
+        # print(list(features) + label)
+        # print(list(features) + list(label))
+        return list(features) + list(label)
 
     def add_noise(self):
         for i in range(0, len(self.__NOISE_LOCATIONS)):
             noise_spot = self.__NOISE_LOCATIONS[i]
             c = self.__RECORDS[noise_spot][2]
-            rand_add = random.randint(1, self.__N_PRIORITIES)
-            self.__RECORDS[noise_spot][2] = (c+rand_add)%5
+            rand_choice = random.choice(self.__PRIORITY_LABELS)
+            while rand_choice == c:
+                rand_choice = random.choice(self.__PRIORITY_LABELS)
+            self.__RECORDS[noise_spot][2] = rand_choice
 
     def write_to_arff(self, output_path):
         arff_writer = open(output_path, "w")
         arff_writer.write("@relation MIMIC\n")
         for col in self.__FEATURES_DF.columns:
             arff_writer.write(f"@attribute {col} real \n")
-        classes_string = ','.join(str(i+1) for i in range(self.__N_PRIORITIES))
-        arff_writer.write(f"@attribute priority {classes_string} real \n\n")
+        classes_string = ','.join(str(i) for i in self.__PRIORITY_LABELS)
+        arff_writer.write(f"@attribute priority {{{classes_string}}} \n\n")
         arff_writer.write("@data" + "\n")
         for record in self.__RECORDS:
             line_str = ",".join(str(i) for i in record)

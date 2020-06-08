@@ -23,33 +23,6 @@ import collections
 from dictionary.tornado_dictionary import TornadoDic
 from drift_detection.detector import SuperDetector
 
-class memoized(object):
-   '''Decorator. Caches a function's return value each time it is called.
-   If called later with the same arguments, the cached value is returned
-   (not reevaluated).
-   '''
-   def __init__(self, func):
-      self.func = func
-      self.cache = {}
-   def __call__(self, *args):
-      if not isinstance(args, collections.Hashable):
-         # uncacheable. a list, for instance.
-         # better to not cache than blow up.
-         return self.func(*args)
-      if args in self.cache:
-         return self.cache[args]
-      else:
-         value = self.func(*args)
-         self.cache[args] = value
-         return value
-   def __repr__(self):
-      '''Return the function's docstring.'''
-      return self.func.__doc__
-   def __get__(self, obj, objtype):
-      '''Support instance methods.'''
-      return functools.partial(self.__call__, obj)
-
-
 class BWAF(SuperDetector):
     """Beta With Adaptive Forgetfulness (BWAF) class."""
 
@@ -75,17 +48,15 @@ class BWAF(SuperDetector):
     def pr_drift(a, b, A, B):
         # MIN_FOR_GAUSSIAN = 30
         # if all(np.array([a,b,A-a,B-b]) > MIN_FOR_GAUSSIAN):
-        # 
+        #
         q0_median = BWAF.beta_median(A-a+1, B-b+1)
         return 1 - 0.5 * (1-betainc(a+1,b+1, q0_median))
 
     # @staticmethod
-    # @memoized
     # def integrand(x, a, b, A, B):
     #     return beta.pdf(x, A-a+1, B-b+1)*betainc(a+1,b+1, x)
     #
     # @staticmethod
-    # @memoized
     # def pr_drift(a, b, A, B):
     #     int = lambda x: BWAF.integrand(x, a, b, A, B)
     #     return integrate.quad(int, 0, 1, limit=20, epsabs=0.001)[0]
