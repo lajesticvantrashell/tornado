@@ -36,43 +36,24 @@ class CDDM(SuperDetector):
         # Data storage
         self.window = []
         self.n_samples = 0
-
         self.total = 0
-
-    def get_x0(self, pr, conf):
-        return pr-conf
 
     def run(self, pr, confidence):
 
-        self.n_samples += 1 # don't actually need this
-
-        x0 = self.get_x0(pr, confidence)
-
-        window = self.window = [x0] + self.window
-
+        self.window.append(pr-conf)
         if len(self.window) > self.window_size:
-            window = self.window = self.window[:-1]
+            self.total -= self.window.pop(0)
 
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            probs = np.exp( - np.cumsum(window)**2 / 2 / (1+np.arange(len(self.window))) )
+        self.n_samples += 1
+        div = min(self.n_samples, self.window_size)
+        pr_drift = 2*np.exp( - self.total**2 / 2 / div )
 
-        pr_drift = min(probs)
 
+        warning_status, drift_status = False, False
         if pr_drift < self.drift_threshold:
-            warning_status = False
             drift_status = True
         elif pr_drift < self.warning_threshold:
             warning_status = True
-            drift_status = False
-        else:
-            warning_status = False
-            drift_status = False
-
-        # self.total += x0
-        # mean = self.total / self.n_samples
-        #
-        # print(pr_drift, warning_status, drift_status, sum(window), mean)
 
         return warning_status, drift_status
 
@@ -85,14 +66,3 @@ class CDDM(SuperDetector):
                 "$\delta_d$:" + str(self.drift_confidence).upper() + ", " +
                 "$\delta_w$:" + str(self.warning_confidence).upper() + ", " +
                 "$N$:" + str(self.window_size).upper()]
-
-
-class CDDM2(CDDM):
-
-    DETECTOR_NAME = TornadoDic.CDDM2
-
-    def get_x0(self, pr, conf):
-        if conf==0 or conf==1:
-            return (pr-conf)/(1e-5)
-        else:
-            return (pr-conf)/(conf*(1-conf))

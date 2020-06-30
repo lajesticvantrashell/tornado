@@ -3,14 +3,14 @@ import numpy as np
 
 class BERNOULLI:
 
-    def __init__(self, concepts, concept_length=25000, transition_length=500, random_seed=10, num_drifts=None):
+    def __init__(self, concepts, concept_length=25000, transition_length=500, random_seed=10, num_drifts=0):
         '''
         Each concept is specified by a triple of values (P(X=1), P(Y=1|X=0), P(Y=0|X=1))
         '''
         self.__CONCEPTS = concepts
         self.__INSTANCES_NUM = concept_length * len(self.__CONCEPTS)
         self.__CONCEPT_LENGTH = concept_length
-        self.__NUM_DRIFTS = num_drifts if num_drifts else len(self.__CONCEPTS) - 1
+        self.__NUM_DRIFTS = num_drifts
         self.__W = transition_length
         self.__RECORDS = []
 
@@ -81,16 +81,16 @@ class BERNOULLI_HARD(BERNOULLI):
     def get_class_name():
         return BERNOULLI.__name__ + '_HARD'
 
-    def __init__(self, noise=0.2, PX1=0.5, concept_length=1000, transition_length=0, random_seed=10, repeats=1):
+    def __init__(self, noise=0.2, PX1=0.5, concept_length=1000, transition_length=0, random_seed=10, repeats=1, mode='real'):
         c1 = (PX1, noise, 1)
-        if random.random()<0.5:
+        if mode=='real':#random.random()<0.5:
             # real drift
             c2 = (1-PX1, 1-noise, 1)
         else:
             # virtual drift
             c2 = (1-PX1, noise, 1)
         concepts = [c1, c2] * repeats
-        num_drifts = 0 if mode=='virtual' else None
+        num_drifts = 0 if mode=='virtual' else repeats*2 - 1
         super().__init__(concepts, concept_length, transition_length, random_seed, num_drifts=num_drifts)
 
 class BERNOULLI_TYPICAL(BERNOULLI):
@@ -104,20 +104,25 @@ class BERNOULLI_TYPICAL(BERNOULLI):
     def get_class_name():
         return BERNOULLI.__name__ + '_TYPICAL'
 
-    def __init__(self, concept_length=1000, transition_length=0, random_seed=10, repeats=1, mode='real'):
+    def __init__(self, PX1=None, concept_length=1000, transition_length=0, random_seed=10, repeats=1, mode=None):
         PY1X0 = np.random.random() / 2
         PY1X1 = np.random.random() / 2
-        PX1 = np.random.random()
-        c1 = (PX1, noise, 1)
-        if random.random()<0.5:
+        PX1 = PX1 if PX1 else np.random.random()
+        c1 = (PX1, PY1X0, PY1X1)
+        if mode==None:
+            if random.random()<0.5:
+                mode='virtual'
+            else:
+                mode='real'
+        if mode=='real':
             # real drift
             PY1X0 = np.random.uniform(PY1X0, 1)
-            PY1X1 = np.random.random(PY1X1, 1)
+            PY1X1 = np.random.uniform(PY1X1, 1)
             PX1 = np.random.random()
         else:
             # virtual drift
             PX1 = np.random.random()
         c2 = (PX1, PY1X0, PY1X1)
         concepts = [c1, c2] * repeats
-        num_drifts = 0 if mode=='virtual' else None
+        num_drifts = 0 if mode=='virtual' else repeats*2 - 1
         super().__init__(concepts, concept_length, transition_length, random_seed, num_drifts=num_drifts)

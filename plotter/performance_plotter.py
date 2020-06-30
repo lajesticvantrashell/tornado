@@ -90,7 +90,10 @@ class Plotter:
         ax.grid()
 
         for i in range(0, len(pairs_names)):
-            ax.plot(x, y[i], label=pairs_names[i], color=color_set[i], linewidth=1.2, zorder=z_orders[i])
+            if color_set:
+                ax.plot(x, y[i], label=pairs_names[i], color=color_set[i], linewidth=1.2, zorder=z_orders[i])
+            else:
+                ax.plot(x, y[i], label=pairs_names[i], linewidth=1.2, zorder=z_orders[i])
 
         # LaTeX rendering case. You may use the next line if you have LaTeX installed.
         # ax.xaxis.set_major_formatter(FuncFormatter(lambda ix, _: '%1.0f' % ix + '\%'))

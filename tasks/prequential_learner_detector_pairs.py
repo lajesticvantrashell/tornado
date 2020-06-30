@@ -28,7 +28,7 @@ class PrequentialMultiPairs:
     and evaluate them prequentially, and calculated score of each pair."""
 
     def __init__(self, pairs, attributes, attributes_scheme,
-                 actual_drift_points, drift_acceptance_interval, w_vec, project, color_set, legend_param=False):
+                 actual_drift_points, drift_acceptance_interval, w_vec, project, color_set=None, legend_param=False):
 
         self.__instance_counter = 0
         self.__num_rubbish = 0

@@ -23,7 +23,7 @@ class BDDM(SuperDetector):
 
     DETECTOR_NAME = TornadoDic.BDDM
 
-    def __init__(self, drift_confidence=0.001, warning_confidence=0.005, drift_rate=0.001, n=100):
+    def __init__(self, drift_confidence=0.01, warning_confidence=0.05, drift_rate=0.001, n=1000):
 
         super().__init__()
 
@@ -57,8 +57,8 @@ class BDDM(SuperDetector):
 
         # if we have exceeded the window length, then combine the first two items in the window
         if self.win_len and len(self.a) > self.win_len:
-            self.a = [sum(self.a[:2])] + self.a[2:]
-            self.b = [sum(self.b[:2])] + self.b[2:]
+            self.a = [sum(self.a[: 2])] + self.a[2: ]
+            self.b = [sum(self.b[: 2])] + self.b[2: ]
 
         log_posteriors = []
         for k in range(self.N):
@@ -69,15 +69,11 @@ class BDDM(SuperDetector):
 
         pr_stable = posteriors[0] / sum(posteriors)
 
-        if pr_stable < self.drift_confidence:
-            warning_status = False
+        warning_status, drift_status = False, False
+        if pr_drift < self.drift_threshold:
             drift_status = True
-        elif pr_stable < self.warning_confidence:
+        elif pr_drift < self.warning_threshold:
             warning_status = True
-            drift_status = False
-        else:
-            warning_status = False
-            drift_status = False
 
         return warning_status, drift_status
 

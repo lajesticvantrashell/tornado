@@ -101,14 +101,7 @@ class MIMIC:
         # dist_id is the concept index
         features = self.__FEATURES_DF.iloc[i, :]
         concept = self.__CONCEPTS[dist_id]
-        # print(features)
-        # print(features.to_numpy().reshape(1, 1))
-        # print(features.to_numpy().reshape(-1, 1).shape())
         label = concept.predict(features.to_numpy().reshape(1, -1))
-        # print(list(features))
-        # print(label)
-        # print(list(features) + label)
-        # print(list(features) + list(label))
         return list(features) + list(label)
 
     def add_noise(self):
